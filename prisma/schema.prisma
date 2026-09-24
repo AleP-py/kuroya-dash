@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Guild {
+  id                    String   @id
+  name                  String?
+  icon                  String?
+  prefix                String   @default("!")
+  welcomeChannelId      String?
+  welcomeMessage        String?  @db.Text
+  welcomeEnabled        Boolean  @default(false)
+  goodbyeChannelId      String?
+  goodbyeMessage        String?  @db.Text
+  goodbyeEnabled        Boolean  @default(false)
+  autoroleIds           String[] @default([])
+  logsChannelId         String?
+  modLogsChannelId      String?
+  automodEnabled        Boolean  @default(false)
+  automodBadwords       String[] @default([])
+  economyEnabled        Boolean  @default(true)
+  stealEnabled          Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
