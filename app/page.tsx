@@ -10,7 +10,7 @@ export default function Home() {
         Configura tu bot desde aquí.
       </p>
       <Link
-        href="/api/auth/signin"
+        href="/api/auth/signin/discord"
         className="bg-[#5865F2] hover:bg-[#4752C4] text-white px-6 py-3 rounded-lg font-medium transition"
       >
         Iniciar sesión con Discord
