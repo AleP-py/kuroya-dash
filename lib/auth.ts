@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
 
 export const authOptions: NextAuthOptions = {
+  debug: true,                          // ← añade esta línea
   adapter: PrismaAdapter(prisma) as any,
   providers: [
     DiscordProvider({
