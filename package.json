@@ -14,9 +14,7 @@
     "react-dom": "^18.3.1",
     "next-auth": "^4.24.7",
     "@auth/prisma-adapter": "^2.4.2",
-    "@prisma/client": "^5.18.0"
-  },
-  "devDependencies": {
+    "@prisma/client": "^5.18.0",
     "prisma": "^5.18.0",
     "typescript": "^5.5.4",
     "@types/node": "^20.14.14",
