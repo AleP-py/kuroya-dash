@@ -29,6 +29,7 @@ export const authOptions: NextAuthOptions = {
           image: profile.avatar 
             ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
             : `https://cdn.discordapp.com/embed/avatars/0.png`,
+          discordId: profile.id,
         };
       },
     },
