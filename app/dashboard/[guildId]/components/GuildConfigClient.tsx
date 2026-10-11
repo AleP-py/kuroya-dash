@@ -7,6 +7,7 @@ import SectionAutomod from './SectionAutomod';
 import SectionComandos from './SectionComandos';
 import SectionAlianzas from './SectionAlianzas';
 import SectionStaff from './SectionStaff';
+import SectionEmbeds from './SectionEmbeds'; // 👈 AÑADIR
 
 interface Props {
     guildId: string;
@@ -65,6 +66,7 @@ export default function GuildConfigClient({
             {section === 'staff'     && <SectionStaff     config={initialConfig} roles={roles} onSave={handleSave} saving={saving} />}
             {section === 'autoroles' && <SectionAutoRoles config={initialConfig} roles={roles} onSave={handleSave} saving={saving} />}
             {section === 'logs'      && <SectionLogs      config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
+            {section === 'embeds' && <SectionEmbeds config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
         </div>
     );
 }
