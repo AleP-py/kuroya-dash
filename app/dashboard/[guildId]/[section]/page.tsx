@@ -11,9 +11,8 @@ const BOT_URL = process.env.BOT_WEBHOOK_URL?.replace('/api/notify-change', '')
 
 const VALID_SECTIONS = [
     'general', 'welcome', 'goodbye', 'automod', 'niveles',
-    'comandos', 'alianzas', 'staff', 'autoroles', 'logs'
+    'comandos', 'alianzas', 'staff', 'autoroles', 'logs', 'embeds'
 ];
-
 async function getConfig(guildId: string) {
     const res = await fetch(`${BOT_URL}/api/guilds/${guildId}`, {
         headers: { 'Authorization': `Bearer ${process.env.DASHBOARD_SECRET}` },
