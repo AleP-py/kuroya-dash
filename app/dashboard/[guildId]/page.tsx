@@ -29,6 +29,16 @@ async function getChannels(guildId: string) {
     return channels.filter((c: any) => c.type === 0);
 }
 
+async function getCommands() {
+    const res = await fetch(`${BOT_URL}/api/commands`, {
+        headers: { 'Authorization': `Bearer ${process.env.DASHBOARD_SECRET}` },
+        cache: 'no-store',
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.commands || [];
+}
+
 async function getRoles(guildId: string) {
     const res = await fetch(`https://discord.com/api/guilds/${guildId}/roles`, {
         headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` },
@@ -71,12 +81,13 @@ export default async function GuildConfigPage({ params }: { params: { guildId: s
         );
     }
 
-    const [channels, roles, guildInfo] = await Promise.all([
-        getChannels(params.guildId),
-        getRoles(params.guildId),
-        getGuildInfo(params.guildId),
-    ]);
-
+    const [channels, roles, guildInfo, commands] = await Promise.all([
+    getChannels(params.guildId),
+    getRoles(params.guildId),
+    getGuildInfo(params.guildId),
+    getCommands(),
+]);
+    
     const guildName = guildInfo?.name || config.guildId;
 
     return (
@@ -112,6 +123,7 @@ export default async function GuildConfigPage({ params }: { params: { guildId: s
                     initialConfig={config}
                     channels={channels}
                     roles={roles}
+                    commands={commands}
                 />
             </main>
         </>
