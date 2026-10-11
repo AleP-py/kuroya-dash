@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { guardarConfig } from '../actions';
 import SectionNiveles from './SectionNiveles';
 import SectionAutomod from './SectionAutomod';
+import SectionComandos from './SectionComandos';
+import SectionAlianzas from './SectionAlianzas';
+import SectionStaff from './SectionStaff';
 
 interface Props {
     guildId: string;
@@ -11,6 +14,7 @@ interface Props {
     initialConfig: any;
     channels: any[];
     roles: any[];
+    commands: any[];
 }
 
 const SECTIONS = [
@@ -19,11 +23,14 @@ const SECTIONS = [
     { id: 'goodbye',   label: 'Despedidas',  icon: '👋' },
     { id: 'automod',   label: 'AutoMod',     icon: '🛡️' },
     { id: 'niveles',   label: 'Niveles',     icon: '📈' },
+    { id: 'comandos',  label: 'Comandos',    icon: '🚫' },
+    { id: 'alianzas',  label: 'Alianzas',    icon: '🤝' },
+    { id: 'staff',     label: 'Staff',       icon: '👔' },
     { id: 'autoroles', label: 'AutoRoles',   icon: '🎭' },
     { id: 'logs',      label: 'Logs',        icon: '📜' },
 ];
 
-export default function ConfigTabs({ guildId, guildName, initialConfig, channels, roles }: Props) {
+export default function ConfigTabs({ guildId, guildName, initialConfig, channels, roles, commands }: Props) {
     const [section, setSection] = useState('general');
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -137,6 +144,9 @@ export default function ConfigTabs({ guildId, guildName, initialConfig, channels
                     {section === 'niveles'   && <SectionNiveles   config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
                     {section === 'autoroles' && <SectionAutoRoles config={initialConfig} roles={roles} onSave={handleSave} saving={saving} />}
                     {section === 'logs'      && <SectionLogs      config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
+                    {section === 'comandos'  && <SectionComandos  config={initialConfig} commands={commands} onSave={handleSave} saving={saving} />}
+                    {section === 'alianzas'  && <SectionAlianzas  config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
+                    {section === 'staff'     && <SectionStaff     config={initialConfig} roles={roles} onSave={handleSave} saving={saving} />}
                 </div>
             </div>
         </div>
