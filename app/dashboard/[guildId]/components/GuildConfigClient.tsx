@@ -24,7 +24,7 @@ const LABEL = 'block text-sm font-medium text-purple-200 mb-1.5';
 const BTN_SAVE = 'w-full bg-gradient-to-r from-[#5865F2] to-[#9B59B6] hover:from-[#4752C4] hover:to-[#8e44ad] disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all btn-glow';
 
 export default function GuildConfigClient({
-    guildId, guildName, initialConfig, channels, roles, commands, section
+    guildId, guildName, initialConfig, channels, roles, commands, section,
 }: Props) {
     const [saving, setSaving] = useState(false);
     const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
@@ -70,7 +70,7 @@ export default function GuildConfigClient({
 }
 
 // ═══════════════════════════════════════════════════════
-// ─── GENERAL (con nuevos roles) ───
+// ─── GENERAL ───
 // ═══════════════════════════════════════════════════════
 function SectionGeneral({ config, roles, onSave, saving }: any) {
     const [prefix, setPrefix] = useState(config.prefix || '!');
@@ -93,7 +93,7 @@ function SectionGeneral({ config, roles, onSave, saving }: any) {
         }, 'General');
     }
 
-    const RoleList = ({ value, setValue, emptyText }: any) => (
+    const RoleList = ({ value, setValue }: any) => (
         <div className="max-h-60 overflow-y-auto bg-[#0f0f13]/60 border border-[#3b2d63]/50 rounded-xl p-2 space-y-1">
             {assignableRoles.length === 0 && (
                 <p className="text-sm text-gray-500 italic p-2">Sin roles disponibles.</p>
@@ -118,7 +118,6 @@ function SectionGeneral({ config, roles, onSave, saving }: any) {
 
     return (
         <div className="space-y-6">
-            {/* Prefijo */}
             <div className={CARD}>
                 <h3 className="text-lg font-semibold text-white">⚙️ Prefijo de comandos</h3>
                 <p className="text-xs text-purple-200/70">El símbolo o palabra que precede a los comandos del bot.</p>
@@ -131,7 +130,6 @@ function SectionGeneral({ config, roles, onSave, saving }: any) {
                 />
             </div>
 
-            {/* Roles del dashboard */}
             <div className={CARD}>
                 <h3 className="text-lg font-semibold text-white">🔐 Roles con acceso a la Dashboard</h3>
                 <p className="text-xs text-purple-200/70">
@@ -140,7 +138,6 @@ function SectionGeneral({ config, roles, onSave, saving }: any) {
                 <RoleList value={dashboardRoles} setValue={setDashboardRoles} />
             </div>
 
-            {/* Roles de moderación */}
             <div className={CARD}>
                 <h3 className="text-lg font-semibold text-white">🛡️ Roles de Moderador</h3>
                 <p className="text-xs text-purple-200/70">
@@ -149,7 +146,6 @@ function SectionGeneral({ config, roles, onSave, saving }: any) {
                 <RoleList value={modRoles} setValue={setModRoles} />
             </div>
 
-            {/* Roles de economía */}
             <div className={CARD}>
                 <h3 className="text-lg font-semibold text-white">💰 Roles de Economía Local</h3>
                 <p className="text-xs text-purple-200/70">
