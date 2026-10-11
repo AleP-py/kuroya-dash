@@ -5,13 +5,60 @@ import { useState } from 'react';
 const INPUT = 'w-full bg-[#0f0f13]/80 border border-[#3b2d63]/60 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#5865F2] focus:ring-2 focus:ring-[#5865F2]/30 transition-all';
 const LABEL = 'block text-sm font-medium text-purple-200 mb-1.5';
 
+const VARIABLES_GRUPOS = [
+    {
+        titulo: '👤 Usuario',
+        items: [
+            ['{user}', 'Mención interactiva'],
+            ['{user_name}', 'Nombre plano'],
+            ['{user_tag}', 'Tag completo'],
+            ['{user_id}', 'ID numérica'],
+            ['{user_avatar}', 'URL de la foto'],
+            ['{user_created_at}', 'Antigüedad de la cuenta'],
+        ],
+    },
+    {
+        titulo: '🏰 Servidor',
+        items: [
+            ['{server_name}', 'Nombre del servidor'],
+            ['{server_id}', 'ID del servidor'],
+            ['{server_icon}', 'URL del icono'],
+            ['{server_banner}', 'URL del banner'],
+            ['{server_owner}', 'Mención al dueño'],
+            ['{member_count}', 'Total de miembros'],
+            ['{boost_count}', 'Cantidad de boosts'],
+            ['{boost_tier}', 'Nivel del servidor'],
+        ],
+    },
+    {
+        titulo: '⏳ Tiempo',
+        items: [
+            ['{time}', 'Hora interactiva'],
+            ['{date}', 'Fecha interactiva'],
+            ['{date_full}', 'Fecha y hora completa'],
+            ['{relative_time}', 'Formato relativo'],
+        ],
+    },
+    {
+        titulo: '🤝 Alianzas',
+        items: [
+            ['{invite_server_name}', 'Nombre del servidor aliado'],
+            ['{invite_server_icon}', 'Icono del servidor aliado'],
+            ['{ally_points}', 'Puntos totales'],
+            ['{points_gained}', 'Puntos ganados'],
+            ['{invite_link}', 'Código de invitación'],
+            ['{relation_type}', 'Tipo de relación'],
+        ],
+    },
+];
+
 interface Props {
     embeds: any[];
     setEmbeds: (v: any[]) => void;
     selectedName: string | null;
     onSelect: (name: string | null) => void;
     label?: string;
-    collapsible?: boolean;    // Si true, empieza colapsado (útil en Alianzas)
+    collapsible?: boolean;
     defaultOpen?: boolean;
 }
 
@@ -26,7 +73,10 @@ export default function EmbedPickerPanel({
 }: Props) {
     const selectedIdx = embeds.findIndex((e: any) => e.nombre === selectedName);
     const selected = selectedIdx !== -1 ? embeds[selectedIdx] : null;
-    const [showEditor, setShowEditor] = useState(collapsible ? false : defaultOpen);
+
+    // 👇 Se abre automáticamente si hay un embed seleccionado
+    const [showEditor, setShowEditor] = useState(!!selectedName);
+    const [showVars, setShowVars] = useState(false);
 
     function updateEmbed(patch: Record<string, any>) {
         if (selectedIdx === -1) return;
@@ -37,13 +87,17 @@ export default function EmbedPickerPanel({
 
     return (
         <div className="space-y-3">
+            {/* Selector */}
             <div>
                 <label className={LABEL}>{label}</label>
                 <select
                     value={selectedName || ''}
                     onChange={e => {
-                        onSelect(e.target.value || null);
-                        if (e.target.value) setShowEditor(true);
+                        const v = e.target.value || null;
+                        onSelect(v);
+                        // Al cambiar de embed, lo abrimos
+                        if (v) setShowEditor(true);
+                        else setShowEditor(false);
                     }}
                     className={INPUT}
                 >
@@ -61,6 +115,35 @@ export default function EmbedPickerPanel({
                 </p>
             </div>
 
+            {/* Botón de variables */}
+            <button
+                type="button"
+                onClick={() => setShowVars(!showVars)}
+                className="text-xs bg-[#3b2d63]/40 hover:bg-[#3b2d63]/60 border border-[#3b2d63]/50 px-3 py-1.5 rounded-lg text-purple-200 transition-all"
+            >
+                🧩 {showVars ? 'Ocultar' : 'Ver'} variables disponibles
+            </button>
+
+            {/* Lista de variables */}
+            {showVars && (
+                <div className="bg-[#0f0f13]/60 border border-[#3b2d63]/40 rounded-xl p-4 space-y-4 animate-slide-in">
+                    {VARIABLES_GRUPOS.map(g => (
+                        <div key={g.titulo}>
+                            <h4 className="text-xs uppercase tracking-widest text-purple-300/70 mb-2">{g.titulo}</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                {g.items.map(([k, v]) => (
+                                    <div key={k} className="flex items-center gap-2 text-xs">
+                                        <code className="text-[#c084fc] bg-[#1b172e] px-1.5 py-0.5 rounded font-mono">{k}</code>
+                                        <span className="text-purple-200/60">{v}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Editor del embed seleccionado */}
             {selected && (
                 <div className="border border-[#3b2d63]/40 rounded-xl overflow-hidden bg-[#0f0f13]/30">
                     <button
@@ -82,7 +165,6 @@ export default function EmbedPickerPanel({
 
                     {showEditor && selected.tipo === 'classic' && (
                         <div className="p-4 space-y-3 border-t border-[#3b2d63]/40">
-                            {/* Color */}
                             <div>
                                 <label className={LABEL + ' !text-xs'}>Color</label>
                                 <div className="flex gap-2 items-center">
@@ -102,7 +184,6 @@ export default function EmbedPickerPanel({
                                 </div>
                             </div>
 
-                            {/* Título */}
                             <div>
                                 <label className={LABEL + ' !text-xs'}>Título</label>
                                 <input
@@ -113,7 +194,6 @@ export default function EmbedPickerPanel({
                                 />
                             </div>
 
-                            {/* Descripción */}
                             <div>
                                 <label className={LABEL + ' !text-xs'}>Descripción</label>
                                 <textarea
@@ -162,7 +242,7 @@ export default function EmbedPickerPanel({
                         <div className="p-4 space-y-3 border-t border-[#3b2d63]/40">
                             <div className="bg-[#9B59B6]/10 border border-[#9B59B6]/30 rounded-lg p-3">
                                 <p className="text-xs text-purple-200/80">
-                                    🧱 Este es un contenedor V2. Para editarlo, ve a la sección <strong>Embeds</strong> (tiene su editor visual con bloques).
+                                    🧱 Este es un contenedor V2. Para editarlo en detalle, ve a la sección <strong>Embeds</strong> (tiene editor visual con bloques).
                                 </p>
                             </div>
                             <div>
