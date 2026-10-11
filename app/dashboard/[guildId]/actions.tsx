@@ -16,7 +16,6 @@ export async function guardarConfig(
     const session = await getServerSession(authOptions);
     if (!session?.user) throw new Error("No autorizado");
 
-    // 1. Guardar en MongoDB vía bot (el bot calculará los diffs y enviará el MD)
     const res = await fetch(`${BOT_URL}/api/guilds/${guildId}`, {
         method: 'POST',
         headers: {
