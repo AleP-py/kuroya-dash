@@ -58,7 +58,7 @@ interface Props {
     selectedName: string | null;
     onSelect: (name: string | null) => void;
     label?: string;
-    collapsible?: boolean;
+    collapsible?: boolean; // sin uso ahora, se mantiene por compatibilidad
     defaultOpen?: boolean;
 }
 
@@ -68,14 +68,10 @@ export default function EmbedPickerPanel({
     selectedName,
     onSelect,
     label = 'Embed personalizado (opcional)',
-    collapsible = false,
-    defaultOpen = true,
 }: Props) {
     const selectedIdx = embeds.findIndex((e: any) => e.nombre === selectedName);
     const selected = selectedIdx !== -1 ? embeds[selectedIdx] : null;
 
-    // 👇 Se abre automáticamente si hay un embed seleccionado
-    const [showEditor, setShowEditor] = useState(!!selectedName);
     const [showVars, setShowVars] = useState(false);
 
     function updateEmbed(patch: Record<string, any>) {
@@ -92,13 +88,7 @@ export default function EmbedPickerPanel({
                 <label className={LABEL}>{label}</label>
                 <select
                     value={selectedName || ''}
-                    onChange={e => {
-                        const v = e.target.value || null;
-                        onSelect(v);
-                        // Al cambiar de embed, lo abrimos
-                        if (v) setShowEditor(true);
-                        else setShowEditor(false);
-                    }}
+                    onChange={e => onSelect(e.target.value || null)}
                     className={INPUT}
                 >
                     <option value="">Sin embed (usar mensaje plano)</option>
@@ -126,7 +116,7 @@ export default function EmbedPickerPanel({
 
             {/* Lista de variables */}
             {showVars && (
-                <div className="bg-[#0f0f13]/60 border border-[#3b2d63]/40 rounded-xl p-4 space-y-4 animate-slide-in">
+                <div className="bg-[#0f0f13]/60 border border-[#3b2d63]/40 rounded-xl p-4 space-y-4">
                     {VARIABLES_GRUPOS.map(g => (
                         <div key={g.titulo}>
                             <h4 className="text-xs uppercase tracking-widest text-purple-300/70 mb-2">{g.titulo}</h4>
@@ -143,127 +133,129 @@ export default function EmbedPickerPanel({
                 </div>
             )}
 
-            {/* Editor del embed seleccionado */}
-            {selected && (
+            {/* ─── Editor SIEMPRE VISIBLE ─── */}
+            {selected && selected.tipo === 'classic' && (
                 <div className="border border-[#3b2d63]/40 rounded-xl overflow-hidden bg-[#0f0f13]/30">
-                    <button
-                        type="button"
-                        onClick={() => setShowEditor(!showEditor)}
-                        className="w-full flex items-center justify-between p-3 hover:bg-[#0f0f13]/60 transition-all"
-                    >
-                        <div className="flex items-center gap-2 min-w-0">
-                            <span>{selected.tipo === 'v2' ? '🧱' : '📄'}</span>
-                            <span className="text-sm text-white font-medium truncate">{selected.nombre}</span>
-                            <span className="text-xs text-purple-300/50 flex-shrink-0">
-                                · {selected.tipo === 'v2' ? 'V2' : 'Clásico'}
-                            </span>
-                        </div>
-                        <span className="text-purple-300/60 text-xs flex-shrink-0 ml-2">
-                            {showEditor ? '▲ Ocultar' : '▼ Editar propiedades'}
-                        </span>
-                    </button>
+                    <div className="flex items-center gap-2 p-3 bg-[#0f0f13]/60 border-b border-[#3b2d63]/40">
+                        <span>📄</span>
+                        <span className="text-sm text-white font-medium">{selected.nombre}</span>
+                        <span className="text-xs text-purple-300/50">· Clásico</span>
+                    </div>
 
-                    {showEditor && selected.tipo === 'classic' && (
-                        <div className="p-4 space-y-3 border-t border-[#3b2d63]/40">
-                            <div>
-                                <label className={LABEL + ' !text-xs'}>Color</label>
-                                <div className="flex gap-2 items-center">
-                                    <input
-                                        type="color"
-                                        value={selected.color || '#3498DB'}
-                                        onChange={e => updateEmbed({ color: e.target.value })}
-                                        className="w-10 h-9 bg-[#0f0f13] border border-[#3b2d63]/60 rounded-lg cursor-pointer"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={selected.color || ''}
-                                        onChange={e => updateEmbed({ color: e.target.value })}
-                                        className={INPUT + ' text-sm'}
-                                        placeholder="#3498DB"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className={LABEL + ' !text-xs'}>Título</label>
+                    <div className="p-4 space-y-3">
+                        {/* Color */}
+                        <div>
+                            <label className={LABEL + ' !text-xs'}>Color de acento</label>
+                            <div className="flex gap-2 items-center">
                                 <input
-                                    value={selected.title || ''}
-                                    onChange={e => updateEmbed({ title: e.target.value })}
-                                    className={INPUT + ' text-sm'}
-                                    placeholder="Título del embed"
+                                    type="color"
+                                    value={selected.color || '#3498DB'}
+                                    onChange={e => updateEmbed({ color: e.target.value })}
+                                    className="w-10 h-9 bg-[#0f0f13] border border-[#3b2d63]/60 rounded-lg cursor-pointer"
                                 />
-                            </div>
-
-                            <div>
-                                <label className={LABEL + ' !text-xs'}>Descripción</label>
-                                <textarea
-                                    value={selected.description || ''}
-                                    onChange={e => updateEmbed({ description: e.target.value })}
-                                    rows={4}
-                                    className={INPUT + ' text-sm'}
-                                    placeholder="Acepta variables como {user}, {server_name}..."
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <label className={LABEL + ' !text-xs'}>URL Imagen</label>
-                                    <input
-                                        value={selected.image || ''}
-                                        onChange={e => updateEmbed({ image: e.target.value || null })}
-                                        className={INPUT + ' text-sm'}
-                                        placeholder="https://..."
-                                    />
-                                </div>
-                                <div>
-                                    <label className={LABEL + ' !text-xs'}>URL Thumbnail</label>
-                                    <input
-                                        value={selected.thumbnail || ''}
-                                        onChange={e => updateEmbed({ thumbnail: e.target.value || null })}
-                                        className={INPUT + ' text-sm'}
-                                        placeholder="https://..."
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className={LABEL + ' !text-xs'}>Footer</label>
                                 <input
-                                    value={selected.footer || ''}
-                                    onChange={e => updateEmbed({ footer: e.target.value || null })}
+                                    type="text"
+                                    value={selected.color || ''}
+                                    onChange={e => updateEmbed({ color: e.target.value })}
                                     className={INPUT + ' text-sm'}
-                                    placeholder="Pie de página"
+                                    placeholder="#3498DB"
                                 />
                             </div>
                         </div>
-                    )}
 
-                    {showEditor && selected.tipo === 'v2' && (
-                        <div className="p-4 space-y-3 border-t border-[#3b2d63]/40">
-                            <div className="bg-[#9B59B6]/10 border border-[#9B59B6]/30 rounded-lg p-3">
-                                <p className="text-xs text-purple-200/80">
-                                    🧱 Este es un contenedor V2. Para editarlo en detalle, ve a la sección <strong>Embeds</strong> (tiene editor visual con bloques).
-                                </p>
+                        {/* Título */}
+                        <div>
+                            <label className={LABEL + ' !text-xs'}>Título</label>
+                            <input
+                                value={selected.title || ''}
+                                onChange={e => updateEmbed({ title: e.target.value })}
+                                className={INPUT + ' text-sm'}
+                                placeholder="Título del embed"
+                            />
+                        </div>
+
+                        {/* Descripción */}
+                        <div>
+                            <label className={LABEL + ' !text-xs'}>Descripción</label>
+                            <textarea
+                                value={selected.description || ''}
+                                onChange={e => updateEmbed({ description: e.target.value })}
+                                rows={4}
+                                className={INPUT + ' text-sm'}
+                                placeholder="Acepta variables como {user}, {server_name}..."
+                            />
+                            <p className="text-[10px] text-purple-300/50 mt-1">
+                                Usa el botón &quot;Ver variables&quot; arriba para ver todas las disponibles.
+                            </p>
+                        </div>
+
+                        {/* Imagen / Thumbnail */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label className={LABEL + ' !text-xs'}>URL Imagen grande</label>
+                                <input
+                                    value={selected.image || ''}
+                                    onChange={e => updateEmbed({ image: e.target.value || null })}
+                                    className={INPUT + ' text-sm'}
+                                    placeholder="https://..."
+                                />
                             </div>
                             <div>
-                                <label className={LABEL + ' !text-xs'}>Color de acento</label>
-                                <div className="flex gap-2 items-center">
-                                    <input
-                                        type="color"
-                                        value={selected.color || '#9B59B6'}
-                                        onChange={e => updateEmbed({ color: e.target.value })}
-                                        className="w-10 h-9 bg-[#0f0f13] border border-[#3b2d63]/60 rounded-lg cursor-pointer"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={selected.color || ''}
-                                        onChange={e => updateEmbed({ color: e.target.value })}
-                                        className={INPUT + ' text-sm'}
-                                    />
-                                </div>
+                                <label className={LABEL + ' !text-xs'}>URL Thumbnail (mini)</label>
+                                <input
+                                    value={selected.thumbnail || ''}
+                                    onChange={e => updateEmbed({ thumbnail: e.target.value || null })}
+                                    className={INPUT + ' text-sm'}
+                                    placeholder="https://..."
+                                />
                             </div>
                         </div>
-                    )}
+
+                        {/* Footer */}
+                        <div>
+                            <label className={LABEL + ' !text-xs'}>Footer (pie)</label>
+                            <input
+                                value={selected.footer || ''}
+                                onChange={e => updateEmbed({ footer: e.target.value || null })}
+                                className={INPUT + ' text-sm'}
+                                placeholder="Pie de página"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {selected && selected.tipo === 'v2' && (
+                <div className="border border-[#9B59B6]/40 rounded-xl overflow-hidden bg-[#9B59B6]/5">
+                    <div className="flex items-center gap-2 p-3 bg-[#9B59B6]/10 border-b border-[#9B59B6]/30">
+                        <span>🧱</span>
+                        <span className="text-sm text-white font-medium">{selected.nombre}</span>
+                        <span className="text-xs text-purple-300/70">· Contenedor V2</span>
+                    </div>
+                    <div className="p-4 space-y-3">
+                        <div className="bg-[#0f0f13]/60 border border-[#3b2d63]/40 rounded-lg p-3">
+                            <p className="text-xs text-purple-200/80">
+                                Para editar los bloques, ve a la sección <strong>Embeds</strong> (tiene editor visual completo).
+                            </p>
+                        </div>
+                        <div>
+                            <label className={LABEL + ' !text-xs'}>Color de acento</label>
+                            <div className="flex gap-2 items-center">
+                                <input
+                                    type="color"
+                                    value={selected.color || '#9B59B6'}
+                                    onChange={e => updateEmbed({ color: e.target.value })}
+                                    className="w-10 h-9 bg-[#0f0f13] border border-[#3b2d63]/60 rounded-lg cursor-pointer"
+                                />
+                                <input
+                                    type="text"
+                                    value={selected.color || ''}
+                                    onChange={e => updateEmbed({ color: e.target.value })}
+                                    className={INPUT + ' text-sm'}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
