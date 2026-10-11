@@ -13,6 +13,8 @@ export const authOptions: NextAuthOptions = {
       id: "discord",
       name: "Discord",
       type: "oauth",
+      // 👇 ESTA LÍNEA ES LA CLAVE PARA SOLUCIONAR EL ERROR
+      issuer: "https://discord.com", 
       authorization: {
         url: "https://discord.com/api/oauth2/authorize",
         params: { scope: "identify guilds" },
@@ -25,7 +27,7 @@ export const authOptions: NextAuthOptions = {
         return {
           id: profile.id,
           name: profile.username,
-          email: profile.email, // Discord puede no devolver email si no pides el scope 'email'
+          email: profile.email,
           image: profile.avatar 
             ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
             : `https://cdn.discordapp.com/embed/avatars/0.png`,
