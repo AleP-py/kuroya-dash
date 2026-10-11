@@ -38,15 +38,16 @@ export const authOptions: NextAuthOptions = {
   ],
     callbacks: {
     async jwt({ token, account, user }) {
-      if (account) {
-        token.accessToken = account.access_token;
-      }
-      if (user) {
-        token.id = user.id;
-        token.discordId = (user as any).discordId; // 👈 Guardamos el Discord ID
-      }
-      return token;
-    },
+  if (account) {
+    token.accessToken = account.access_token;
+    // 👇 ESTA ES LA LÍNEA CLAVE: guardamos el ID real de Discord
+    token.discordId = account.providerAccountId;
+  }
+  if (user) {
+    token.id = user.id;
+  }
+  return token;
+},
     async session({ session, token }) {
       if (session.user) {
         // @ts-ignore
