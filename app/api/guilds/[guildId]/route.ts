@@ -5,7 +5,11 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request, { params }: { params: { guildId: string } }) {
   const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  
+  // 👇 CAMBIO AQUÍ: Validamos session Y session.user
+  if (!session || !session.user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
 
   const { guildId } = params;
   const formData = await req.formData();
@@ -28,8 +32,6 @@ export async function POST(req: Request, { params }: { params: { guildId: string
 
   // 2. Enviamos la notificación al bot (Webhook)
   try {
-    // ⚠️ IMPORTANTE: Si el bot está en OTRO contenedor, debes poner la URL pública del bot aquí.
-    // Si están en el MISMO contenedor, usa http://127.0.0.1:3001
     const botWebhookUrl = process.env.BOT_WEBHOOK_URL || "http://127.0.0.1:3001/api/notify-change";
     
     await fetch(botWebhookUrl, {
@@ -40,7 +42,8 @@ export async function POST(req: Request, { params }: { params: { guildId: string
       },
       body: JSON.stringify({
         // @ts-ignore
-        discordId: session.user.discordId, // 👈 Enviamos el Discord ID, no el de Prisma
+        discordId: session.user.discordId,
+        // 👇 CAMBIO AQUÍ: TypeScript ya sabe que session.user existe
         userName: session.user.name,
         guildId: guildId,
         guildName: updatedGuild.name,
@@ -49,7 +52,6 @@ export async function POST(req: Request, { params }: { params: { guildId: string
     });
   } catch (error) {
     console.error("Error notificando al bot:", error);
-    // No detenemos la respuesta si el bot falla, los datos ya se guardaron en Postgres
   }
 
   // 3. Redirigimos de vuelta
