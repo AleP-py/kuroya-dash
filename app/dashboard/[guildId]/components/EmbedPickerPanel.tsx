@@ -58,6 +58,7 @@ interface Props {
     selectedName: string | null;
     onSelect: (name: string | null) => void;
     label?: string;
+    collapsible?: boolean; // 🔧 Aceptada por compatibilidad, ya no se usa
 }
 
 export default function EmbedPickerPanel({
