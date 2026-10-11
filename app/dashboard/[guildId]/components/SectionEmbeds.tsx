@@ -5,7 +5,11 @@ import { useState } from 'react';
 interface Props {
     config: any;
     channels: any[];
-    onSave: (updates: Record<string, any>, seccion: string) => void;
+    embeds: any[];
+    setEmbeds: (v: any[]) => void;
+    botones: any[];
+    setBotones: (v: any[]) => void;
+    onSave: (updates: Record<string, any>, seccion: string, incluirEmbeds?: boolean) => void;
     saving: boolean;
 }
 
@@ -85,10 +89,17 @@ function nuevoEmbedVacio(nombre: string, tipo: 'classic' | 'v2') {
     };
 }
 
-export default function SectionEmbeds({ config, channels, onSave, saving }: Props) {
+export default function SectionEmbeds({
+    config,
+    channels,
+    embeds,
+    setEmbeds,
+    botones,
+    setBotones,
+    onSave,
+    saving,
+}: Props) {
     const [tab, setTab] = useState<'embeds' | 'botones' | 'vars'>('embeds');
-    const [embeds, setEmbeds] = useState<any[]>(config.customEmbeds || []);
-    const [botones, setBotones] = useState<any[]>(config.customButtons || []);
     const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
     const [nuevoNombre, setNuevoNombre] = useState('');
     const [nuevoTipo, setNuevoTipo] = useState<'classic' | 'v2'>('classic');
@@ -97,11 +108,11 @@ export default function SectionEmbeds({ config, channels, onSave, saving }: Prop
 
     // ─── Helpers para actualizar ───
     function updateEmbed(idx: number, patch: Record<string, any>) {
-        setEmbeds(prev => prev.map((e, i) => i === idx ? { ...e, ...patch } : e));
+        setEmbeds(embeds.map((e, i) => i === idx ? { ...e, ...patch } : e));
     }
 
     function updateBlock(embedIdx: number, blockIdx: number, patch: Record<string, any>) {
-        setEmbeds(prev => prev.map((e, i) => {
+        setEmbeds(embeds.map((e, i) => {
             if (i !== embedIdx) return e;
             const nuevos = [...(e.v2?.blocks || [])];
             nuevos[blockIdx] = { ...nuevos[blockIdx], ...patch };
@@ -117,7 +128,7 @@ export default function SectionEmbeds({ config, channels, onSave, saving }: Prop
         if (tipo === 'media') base.urls = [];
         if (tipo === 'actionrow') base.botones = [];
 
-        setEmbeds(prev => prev.map((e, i) => {
+        setEmbeds(embeds.map((e, i) => {
             if (i !== embedIdx) return e;
             const bloques = [...(e.v2?.blocks || []), base];
             return { ...e, v2: { ...e.v2, blocks: bloques } };
@@ -125,7 +136,7 @@ export default function SectionEmbeds({ config, channels, onSave, saving }: Prop
     }
 
     function removeBlock(embedIdx: number, blockIdx: number) {
-        setEmbeds(prev => prev.map((e, i) => {
+        setEmbeds(embeds.map((e, i) => {
             if (i !== embedIdx) return e;
             const bloques = (e.v2?.blocks || []).filter((_: any, bi: number) => bi !== blockIdx);
             return { ...e, v2: { ...e.v2, blocks: bloques } };
@@ -133,7 +144,7 @@ export default function SectionEmbeds({ config, channels, onSave, saving }: Prop
     }
 
     function moveBlock(embedIdx: number, blockIdx: number, dir: 'up' | 'down') {
-        setEmbeds(prev => prev.map((e, i) => {
+        setEmbeds(embeds.map((e, i) => {
             if (i !== embedIdx) return e;
             const bloques = [...(e.v2?.blocks || [])];
             const target = dir === 'up' ? blockIdx - 1 : blockIdx + 1;
@@ -174,10 +185,8 @@ export default function SectionEmbeds({ config, channels, onSave, saving }: Prop
     }
 
     function guardarTodo() {
-        onSave({
-            customEmbeds: embeds,
-            customButtons: botones,
-        }, 'Embeds');
+        // incluirEmbeds = false, porque ya los enviamos explícitamente en updates
+        onSave({ customEmbeds: embeds, customButtons: botones }, 'Embeds', false);
     }
 
     // ─── Render principal ───
@@ -386,7 +395,6 @@ function EmbedEditor({
 
     return (
         <>
-            {/* Header del editor */}
             <div className={CARD}>
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -406,7 +414,6 @@ function EmbedEditor({
                     </div>
                 </div>
 
-                {/* Color + Botones vinculados */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className={LABEL}>Color de acento</label>
@@ -442,7 +449,6 @@ function EmbedEditor({
                 </div>
             </div>
 
-            {/* ─── EDITOR CLÁSICO ─── */}
             {!esV2 && (
                 <div className={CARD}>
                     <h3 className="text-lg font-semibold text-white">📝 Contenido</h3>
@@ -499,7 +505,6 @@ function EmbedEditor({
                         />
                     </div>
 
-                    {/* Campos */}
                     <div>
                         <div className="flex justify-between items-center mb-3">
                             <label className={LABEL + ' !mb-0'}>Campos ({embed.fields?.length || 0}/25)</label>
@@ -564,14 +569,12 @@ function EmbedEditor({
                 </div>
             )}
 
-            {/* ─── EDITOR V2 ─── */}
             {esV2 && (
                 <div className={CARD}>
                     <div className="flex justify-between items-center mb-3">
                         <h3 className="text-lg font-semibold text-white">🧱 Bloques ({embed.v2?.blocks?.length || 0})</h3>
                     </div>
 
-                    {/* Añadir bloque */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
                         {TIPOS_BLOQUE.map(t => (
                             <button
@@ -587,7 +590,6 @@ function EmbedEditor({
                         ))}
                     </div>
 
-                    {/* Lista de bloques */}
                     <div className="space-y-3">
                         {(embed.v2?.blocks || []).length === 0 && (
                             <p className="text-sm text-gray-500 italic text-center py-6">Sin bloques. Añade uno arriba.</p>
@@ -633,7 +635,6 @@ function BloqueEditor({ bloque, idx, total, botones, onUpdate, onRemove, onMoveU
                 </div>
             </div>
 
-            {/* Campos según tipo */}
             {(bloque.tipo === 'header' || bloque.tipo === 'text') && (
                 <textarea
                     value={bloque.texto || ''}
@@ -785,7 +786,6 @@ function SectionBotones({ botones, setBotones, embeds, setEmbeds }: any) {
         if (!confirm(`¿Eliminar botón "${botones[i].nombre}"?`)) return;
         const nombre = botones[i].nombre;
         setBotones(botones.filter((_: any, idx: number) => idx !== i));
-        // Quitar de todos los embeds
         setEmbeds(embeds.map((e: any) => ({
             ...e,
             botones: (e.botones || []).filter((b: string) => b.toLowerCase() !== nombre.toLowerCase()),
