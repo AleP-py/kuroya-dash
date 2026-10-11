@@ -36,13 +36,14 @@ export const authOptions: NextAuthOptions = {
       },
     },
   ],
-  callbacks: {
+    callbacks: {
     async jwt({ token, account, user }) {
       if (account) {
         token.accessToken = account.access_token;
       }
       if (user) {
         token.id = user.id;
+        token.discordId = (user as any).discordId; // 👈 Guardamos el Discord ID
       }
       return token;
     },
@@ -50,6 +51,8 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         // @ts-ignore
         session.user.id = token.id;
+        // @ts-ignore
+        session.user.discordId = token.discordId; // 👈 Lo pasamos a la sesión
         // @ts-ignore
         session.accessToken = token.accessToken; 
       }
