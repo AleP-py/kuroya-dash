@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { guardarConfig } from '../actions';
+import SectionNiveles from './SectionNiveles';
 
 interface Props {
     guildId: string;
@@ -71,7 +72,7 @@ export default function ConfigTabs({ guildId, guildName, initialConfig, channels
             {tab === 'welcome'   && <SectionWelcome   config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
             {tab === 'goodbye'   && <SectionGoodbye   config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
             {tab === 'automod'   && <SectionAutomod   config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
-            {tab === 'niveles'   && <SectionPlaceholder name="Niveles" />}
+            {tab === 'niveles'   && <SectionNiveles config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
             {tab === 'autoroles' && <SectionAutoRoles config={initialConfig} roles={roles} onSave={handleSave} saving={saving} />}
             {tab === 'logs'      && <SectionLogs      config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
         </div>
