@@ -55,15 +55,22 @@ const CATEGORIES = [
         ],
     },
     {
-        title: 'Comunidad',
-        subtitle: 'Niveles, roles y relaciones',
-        items: [
-            { href: 'niveles',   icon: '📈', title: 'Niveles',   desc: 'Sistema de XP local, recompensas y multiplicadores.' },
-            { href: 'autoroles', icon: '🎭', title: 'AutoRoles', desc: 'Roles que se asignan al entrar.' },
-            { href: 'staff',     icon: '👔', title: 'Staff',     desc: 'Directorio, mapeo de roles y calificaciones.' },
-            { href: 'alianzas',  icon: '🤝', title: 'Alianzas',  desc: 'Sistema de alianzas, afiliaciones y network.' },
-        ],
-    },
+    title: 'Comunidad',
+    subtitle: 'Niveles, roles y relaciones',
+    items: [
+        { href: 'niveles',   icon: '📈', title: 'Niveles',   desc: 'Sistema de XP local, recompensas y multiplicadores.' },
+        { href: 'autoroles', icon: '🎭', title: 'AutoRoles', desc: 'Roles que se asignan al entrar.' },
+        { href: 'staff',     icon: '👔', title: 'Staff',     desc: 'Directorio, mapeo de roles y calificaciones.' },
+        { href: 'alianzas',  icon: '🤝', title: 'Alianzas',  desc: 'Sistema de alianzas, afiliaciones y network.' },
+    ],
+},
+{
+    title: 'Personalización',
+    subtitle: 'Contenido visual y componentes',
+    items: [
+        { href: 'embeds',   icon: '🎨', title: 'Embeds',    desc: 'Embeds clásicos, contenedores V2 y botones persistentes.' },
+    ],
+},
 ];
 
 export default async function GuildHome({ params }: { params: { guildId: string } }) {
