@@ -17,15 +17,27 @@ const INPUT = 'w-full bg-[#0f0f13]/80 border border-[#3b2d63]/60 rounded-xl px-4
 const LABEL = 'block text-sm font-medium text-purple-200 mb-1.5';
 const BTN_SAVE = 'w-full bg-gradient-to-r from-[#5865F2] to-[#9B59B6] hover:from-[#4752C4] hover:to-[#8e44ad] disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all btn-glow';
 
+const VARS_RAPIDAS = [
+    ['{user}', 'Mención'],
+    ['{user_name}', 'Nombre'],
+    ['{user_avatar}', 'Foto'],
+    ['{server_name}', 'Servidor'],
+    ['{member_count}', 'Miembros'],
+    ['{boost_count}', 'Boosts'],
+    ['{date}', 'Fecha'],
+    ['{relative_time}', 'Tiempo rel.'],
+];
+
 export default function SectionWelcome({ config, channels, embeds, setEmbeds, onSave, saving }: Props) {
     const c = config.welcome?.list?.[0] || {};
     const [enabled, setEnabled] = useState(c.enabled ?? false);
     const [channelId, setChannelId] = useState(c.channelId || '');
-    const [message, setMessage] = useState(c.message || '¡Bienvenido {user} a {server}!');
+    const [message, setMessage] = useState(c.message || '¡Bienvenido {user} a {server_name}!');
     const [embedNombre, setEmbedNombre] = useState<string | null>(c.embedNombre || null);
     const [embedColor, setEmbedColor] = useState(c.embedColor || '#3498DB');
     const [imageUrl, setImageUrl] = useState(c.imageUrl || '');
     const [botones, setBotones] = useState<string[]>(c.botones || []);
+    const [showVars, setShowVars] = useState(false);
 
     const usaEmbed = !!embedNombre;
 
@@ -40,7 +52,7 @@ export default function SectionWelcome({ config, channels, embeds, setEmbeds, on
                 imageUrl: imageUrl || null,
                 botones,
             }]
-        }, 'Bienvenidas', true); // true → también envía embeds modificados
+        }, 'Bienvenidas', true);
     }
 
     return (
@@ -62,7 +74,7 @@ export default function SectionWelcome({ config, channels, embeds, setEmbeds, on
                 </div>
             </div>
 
-            {/* ─── SELECTOR DE EMBED ─── */}
+            {/* ─── Embed personalizado ─── */}
             <div className={CARD}>
                 <h3 className="text-lg font-semibold text-white">🎨 Apariencia</h3>
 
@@ -75,15 +87,34 @@ export default function SectionWelcome({ config, channels, embeds, setEmbeds, on
                 />
 
                 {!usaEmbed && (
-                    <div>
-                        <label className={LABEL}>Mensaje plano</label>
-                        <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3} className={INPUT} />
-                        <p className="text-xs text-purple-300/50 mt-1">Variables: {'{user}'}, {'{server}'}, {'{member_count}'}, {'{user_avatar}'}...</p>
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <label className={LABEL + ' !mb-0'}>Mensaje plano</label>
+                            <button
+                                type="button"
+                                onClick={() => setShowVars(!showVars)}
+                                className="text-xs bg-[#3b2d63]/40 hover:bg-[#3b2d63]/60 border border-[#3b2d63]/50 px-2.5 py-1 rounded-lg text-purple-200 transition-all"
+                            >
+                                🧩 {showVars ? 'Ocultar' : 'Ver'} variables
+                            </button>
+                        </div>
+                        <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3} className={INPUT} placeholder="¡Bienvenido {user} a {server_name}!" />
+
+                        {showVars && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 p-3 bg-[#0f0f13]/60 border border-[#3b2d63]/40 rounded-xl animate-slide-in">
+                                {VARS_RAPIDAS.map(([k, v]) => (
+                                    <div key={k} className="flex items-center gap-1.5 text-[11px]">
+                                        <code className="text-[#c084fc] bg-[#1b172e] px-1.5 py-0.5 rounded font-mono">{k}</code>
+                                        <span className="text-purple-200/60">{v}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
 
-            {/* ─── Opciones extra (imagen y botones) ─── */}
+            {/* ─── Extras ─── */}
             <div className={CARD}>
                 <h3 className="text-lg font-semibold text-white">✨ Extras</h3>
 
@@ -106,7 +137,7 @@ export default function SectionWelcome({ config, channels, embeds, setEmbeds, on
                         ))}
                     </div>
                     <p className="text-xs text-purple-300/50 mt-1">
-                        <code className="text-purple-300">{'{'}</code> Escribe los nombres de los botones a usar.
+                        Escribe el nombre del botón registrado (ej: <code className="text-purple-300">verificacion</code>) para vincularlo.
                     </p>
                 </div>
             </div>
