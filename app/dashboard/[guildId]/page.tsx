@@ -17,17 +17,16 @@ async function getGuildInfo(guildId: string) {
     return res.json();
 }
 
-async function getChannelsCount(guildId: string) {
+async function getChannels(guildId: string) {
     const res = await fetch(`https://discord.com/api/guilds/${guildId}/channels`, {
         headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` },
         cache: 'no-store',
     });
     if (!res.ok) return [];
-    const channels = await res.json();
-    return channels;
+    return res.json();
 }
 
-async function getRolesCount(guildId: string) {
+async function getRoles(guildId: string) {
     const res = await fetch(`https://discord.com/api/guilds/${guildId}/roles`, {
         headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` },
         cache: 'no-store',
@@ -41,28 +40,28 @@ const CATEGORIES = [
         title: 'Principal',
         subtitle: 'Explora la categoría Principal',
         items: [
-            { href: 'general',      icon: '⚙️', title: 'Ajustes',       desc: 'Prefijo, roles con acceso, moderación y economía local.' },
-            { href: 'welcome',      icon: '👋', title: 'Bienvenidas',   desc: 'Mensajes automáticos de bienvenida.' },
-            { href: 'goodbye',      icon: '👋', title: 'Despedidas',    desc: 'Mensajes automáticos de despedida.' },
+            { href: 'general',   icon: '⚙️', title: 'Ajustes',     desc: 'Prefijo, roles con acceso, moderación y economía local.' },
+            { href: 'welcome',   icon: '👋', title: 'Bienvenidas', desc: 'Mensajes automáticos de bienvenida.' },
+            { href: 'goodbye',   icon: '👋', title: 'Despedidas',  desc: 'Mensajes automáticos de despedida.' },
         ],
     },
     {
         title: 'Moderación',
         subtitle: 'Herramientas de control y protección',
         items: [
-            { href: 'automod',      icon: '🛡️', title: 'AutoMod',       desc: 'Filtros automáticos con IA contextual.' },
-            { href: 'comandos',     icon: '🚫', title: 'Comandos',      desc: 'Activa o desactiva comandos y módulos.' },
-            { href: 'logs',         icon: '📜', title: 'Logs',          desc: 'Canales de auditoría y registros.' },
+            { href: 'automod',  icon: '🛡️', title: 'AutoMod',  desc: 'Filtros automáticos con IA contextual.' },
+            { href: 'comandos', icon: '🚫', title: 'Comandos', desc: 'Activa o desactiva comandos y módulos.' },
+            { href: 'logs',     icon: '📜', title: 'Logs',     desc: 'Canales de auditoría y registros.' },
         ],
     },
     {
         title: 'Comunidad',
         subtitle: 'Niveles, roles y relaciones',
         items: [
-            { href: 'niveles',      icon: '📈', title: 'Niveles',       desc: 'Sistema de XP local, recompensas y multiplicadores.' },
-            { href: 'autoroles',    icon: '🎭', title: 'AutoRoles',     desc: 'Roles que se asignan al entrar.' },
-            { href: 'staff',        icon: '👔', title: 'Staff',         desc: 'Directorio, mapeo de roles y calificaciones.' },
-            { href: 'alianzas',     icon: '🤝', title: 'Alianzas',      desc: 'Sistema de alianzas, afiliaciones y network.' },
+            { href: 'niveles',   icon: '📈', title: 'Niveles',   desc: 'Sistema de XP local, recompensas y multiplicadores.' },
+            { href: 'autoroles', icon: '🎭', title: 'AutoRoles', desc: 'Roles que se asignan al entrar.' },
+            { href: 'staff',     icon: '👔', title: 'Staff',     desc: 'Directorio, mapeo de roles y calificaciones.' },
+            { href: 'alianzas',  icon: '🤝', title: 'Alianzas',  desc: 'Sistema de alianzas, afiliaciones y network.' },
         ],
     },
 ];
@@ -73,8 +72,8 @@ export default async function GuildHome({ params }: { params: { guildId: string 
 
     const [guildInfo, channels, roles] = await Promise.all([
         getGuildInfo(params.guildId),
-        getChannelsCount(params.guildId),
-        getRolesCount(params.guildId),
+        getChannels(params.guildId),
+        getRoles(params.guildId),
     ]);
 
     if (!guildInfo) {
@@ -132,7 +131,7 @@ export default async function GuildHome({ params }: { params: { guildId: string 
                                 Bienvenido a <span className="bg-gradient-to-r from-[#5865F2] to-[#c084fc] bg-clip-text text-transparent">{guildName}</span>
                             </h1>
                             <p className="text-purple-200/70 text-lg max-w-2xl leading-relaxed">
-                                Empieza desde aquí con una vista general de los módulos disponibles. 
+                                Empieza desde aquí con una vista general de los módulos disponibles.
                                 Kuroya es un bot multifunción y desde aquí puedes explorar todo lo que puede hacer por tu servidor.
                             </p>
                             <div className="flex flex-wrap gap-3 mt-6">
