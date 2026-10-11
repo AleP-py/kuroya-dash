@@ -10,7 +10,6 @@ export async function POST(req: Request, { params }: { params: { guildId: string
   const { guildId } = params;
   const formData = await req.formData();
 
-  // Extraemos los datos del formulario
   const prefix = formData.get("prefix") as string;
   const welcomeEnabled = formData.get("welcomeEnabled") === "on";
   const welcomeChannelId = formData.get("welcomeChannelId") as string;
@@ -27,6 +26,8 @@ export async function POST(req: Request, { params }: { params: { guildId: string
     },
   });
 
-  // Redirigimos de vuelta a la página de configuración
-  return NextResponse.redirect(new URL(`/dashboard/${guildId}`, req.url));
+  // 👇 LA MAGIA ESTÁ AQUÍ: Usamos la URL pública de las variables de entorno
+  const baseUrl = process.env.NEXTAUTH_URL || "https://auuzbio7cj.apps.bot-hosting.cloud";
+  
+  return NextResponse.redirect(new URL(`/dashboard/${guildId}`, baseUrl));
 }
