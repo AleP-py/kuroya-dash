@@ -15,8 +15,8 @@ export async function POST(req: Request, { params }: { params: { guildId: string
   const welcomeChannelId = formData.get("welcomeChannelId") as string;
   const welcomeMessage = formData.get("welcomeMessage") as string;
 
-  // Actualizamos en la base de datos
-  await prisma.guild.update({
+  // 1. Actualizamos en la base de datos
+  const updatedGuild = await prisma.guild.update({
     where: { id: guildId },
     data: {
       prefix,
@@ -26,8 +26,28 @@ export async function POST(req: Request, { params }: { params: { guildId: string
     },
   });
 
-  // 👇 LA MAGIA ESTÁ AQUÍ: Usamos la URL pública de las variables de entorno
+  // 2. Enviamos la notificación al bot (Webhook interno)
+  try {
+    await fetch(process.env.BOT_API_URL || "http://127.0.0.1:3001/api/notify-change", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.BOT_API_SECRET}` // Seguridad
+      },
+      body: JSON.stringify({
+        // @ts-ignore
+        userId: session.user.id, // ID del usuario en tu base de datos
+        guildId: guildId,
+        guildName: updatedGuild.name,
+        changes: { prefix, welcomeEnabled, welcomeChannelId, welcomeMessage }
+      }),
+    });
+  } catch (error) {
+    console.error("Error notificando al bot:", error);
+    // No detenemos la respuesta si el bot falla, los datos ya se guardaron
+  }
+
+  // 3. Redirigimos de vuelta
   const baseUrl = process.env.NEXTAUTH_URL || "https://auuzbio7cj.apps.bot-hosting.cloud";
-  
   return NextResponse.redirect(new URL(`/dashboard/${guildId}`, baseUrl));
 }
