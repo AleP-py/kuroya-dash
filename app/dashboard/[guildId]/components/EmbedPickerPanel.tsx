@@ -58,8 +58,6 @@ interface Props {
     selectedName: string | null;
     onSelect: (name: string | null) => void;
     label?: string;
-    collapsible?: boolean; // sin uso ahora, se mantiene por compatibilidad
-    defaultOpen?: boolean;
 }
 
 export default function EmbedPickerPanel({
@@ -69,10 +67,24 @@ export default function EmbedPickerPanel({
     onSelect,
     label = 'Embed personalizado (opcional)',
 }: Props) {
-    const selectedIdx = embeds.findIndex((e: any) => e.nombre === selectedName);
+    const [showVars, setShowVars] = useState(false);
+
+    // 🔍 Comparación robusta: trim + lowercase
+    const norm = (s: string | null | undefined) => (s || '').trim().toLowerCase();
+    const targetName = norm(selectedName);
+    const selectedIdx = targetName
+        ? embeds.findIndex((e: any) => norm(e?.nombre) === targetName)
+        : -1;
     const selected = selectedIdx !== -1 ? embeds[selectedIdx] : null;
 
-    const [showVars, setShowVars] = useState(false);
+    // 🐛 DEBUG visible: solo se muestra si hay embeds pero no se encuentra el seleccionado
+    const debugInfo = {
+        selectedName,
+        targetName,
+        embedsCount: embeds.length,
+        embedsNames: embeds.map((e: any) => e?.nombre),
+        selectedIdx,
+    };
 
     function updateEmbed(patch: Record<string, any>) {
         if (selectedIdx === -1) return;
@@ -92,18 +104,38 @@ export default function EmbedPickerPanel({
                     className={INPUT}
                 >
                     <option value="">Sin embed (usar mensaje plano)</option>
-                    {embeds.map((e: any) => (
-                        <option key={e.nombre} value={e.nombre}>
-                            {e.tipo === 'v2' ? '🧱' : '📄'} {e.nombre}
+                    {embeds.map((e: any, i: number) => (
+                        <option key={`${e?.nombre}-${i}`} value={e?.nombre || ''}>
+                            {e?.tipo === 'v2' ? '🧱' : '📄'} {e?.nombre || '(sin nombre)'}
                         </option>
                     ))}
                 </select>
                 <p className="text-xs text-purple-300/50 mt-1">
                     {embeds.length === 0
                         ? 'No hay embeds creados. Ve a la sección Embeds para crear uno.'
-                        : 'Si seleccionas uno, se usará en lugar del mensaje plano.'}
+                        : `Hay ${embeds.length} embed(s) disponibles.`}
                 </p>
             </div>
+
+            {/* 🐛 DEBUG si el embed no se encuentra */}
+            {selectedName && !selected && (
+                <div className="bg-red-500/10 border border-red-500/40 rounded-xl p-3 text-xs">
+                    <p className="text-red-300 font-semibold mb-1">⚠️ No se encontró el embed seleccionado</p>
+                    <p className="text-red-200/70 mb-2">
+                        Buscando: <code className="bg-red-500/20 px-1 rounded">{JSON.stringify(selectedName)}</code>
+                    </p>
+                    <p className="text-red-200/70 mb-2">
+                        Disponibles: <code className="bg-red-500/20 px-1 rounded">{JSON.stringify(debugInfo.embedsNames)}</code>
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => onSelect(null)}
+                        className="text-xs bg-red-500/30 hover:bg-red-500/50 px-2 py-1 rounded text-white mt-1"
+                    >
+                        Deseleccionar
+                    </button>
+                </div>
+            )}
 
             {/* Botón de variables */}
             <button
@@ -133,7 +165,7 @@ export default function EmbedPickerPanel({
                 </div>
             )}
 
-            {/* ─── Editor SIEMPRE VISIBLE ─── */}
+            {/* ─── EDITOR CLÁSICO ─── */}
             {selected && selected.tipo === 'classic' && (
                 <div className="border border-[#3b2d63]/40 rounded-xl overflow-hidden bg-[#0f0f13]/30">
                     <div className="flex items-center gap-2 p-3 bg-[#0f0f13]/60 border-b border-[#3b2d63]/40">
@@ -143,7 +175,6 @@ export default function EmbedPickerPanel({
                     </div>
 
                     <div className="p-4 space-y-3">
-                        {/* Color */}
                         <div>
                             <label className={LABEL + ' !text-xs'}>Color de acento</label>
                             <div className="flex gap-2 items-center">
@@ -163,7 +194,6 @@ export default function EmbedPickerPanel({
                             </div>
                         </div>
 
-                        {/* Título */}
                         <div>
                             <label className={LABEL + ' !text-xs'}>Título</label>
                             <input
@@ -174,7 +204,6 @@ export default function EmbedPickerPanel({
                             />
                         </div>
 
-                        {/* Descripción */}
                         <div>
                             <label className={LABEL + ' !text-xs'}>Descripción</label>
                             <textarea
@@ -185,11 +214,10 @@ export default function EmbedPickerPanel({
                                 placeholder="Acepta variables como {user}, {server_name}..."
                             />
                             <p className="text-[10px] text-purple-300/50 mt-1">
-                                Usa el botón &quot;Ver variables&quot; arriba para ver todas las disponibles.
+                                Usá &quot;Ver variables&quot; arriba para ver todas las disponibles.
                             </p>
                         </div>
 
-                        {/* Imagen / Thumbnail */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label className={LABEL + ' !text-xs'}>URL Imagen grande</label>
@@ -211,7 +239,6 @@ export default function EmbedPickerPanel({
                             </div>
                         </div>
 
-                        {/* Footer */}
                         <div>
                             <label className={LABEL + ' !text-xs'}>Footer (pie)</label>
                             <input
@@ -225,6 +252,7 @@ export default function EmbedPickerPanel({
                 </div>
             )}
 
+            {/* ─── EDITOR V2 ─── */}
             {selected && selected.tipo === 'v2' && (
                 <div className="border border-[#9B59B6]/40 rounded-xl overflow-hidden bg-[#9B59B6]/5">
                     <div className="flex items-center gap-2 p-3 bg-[#9B59B6]/10 border-b border-[#9B59B6]/30">
