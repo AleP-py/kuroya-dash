@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { guardarConfig } from '../actions';
 import SectionNiveles from './SectionNiveles';
+import SectionNiveles from './SectionNiveles';
+import SectionAutomod from './SectionAutomod';
 
 interface Props {
     guildId: string;
@@ -71,7 +73,7 @@ export default function ConfigTabs({ guildId, guildName, initialConfig, channels
             {tab === 'general'   && <SectionGeneral   config={initialConfig} onSave={handleSave} saving={saving} />}
             {tab === 'welcome'   && <SectionWelcome   config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
             {tab === 'goodbye'   && <SectionGoodbye   config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
-            {tab === 'automod'   && <SectionAutomod   config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
+            {tab === 'automod'   && <SectionAutomod config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
             {tab === 'niveles'   && <SectionNiveles config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
             {tab === 'autoroles' && <SectionAutoRoles config={initialConfig} roles={roles} onSave={handleSave} saving={saving} />}
             {tab === 'logs'      && <SectionLogs      config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
