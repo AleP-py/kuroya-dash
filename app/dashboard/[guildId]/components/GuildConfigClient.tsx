@@ -7,7 +7,9 @@ import SectionAutomod from './SectionAutomod';
 import SectionComandos from './SectionComandos';
 import SectionAlianzas from './SectionAlianzas';
 import SectionStaff from './SectionStaff';
-import SectionEmbeds from './SectionEmbeds'; // 👈 AÑADIR
+import SectionEmbeds from './SectionEmbeds';
+import SectionWelcome from './SectionWelcome';
+import SectionGoodbye from './SectionGoodbye';
 
 interface Props {
     guildId: string;
@@ -30,11 +32,20 @@ export default function GuildConfigClient({
     const [saving, setSaving] = useState(false);
     const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
-    async function handleSave(updates: Record<string, any>, seccion: string) {
+    // 🎨 Estado compartido de embeds y botones
+    const [embeds, setEmbeds] = useState<any[]>(initialConfig.customEmbeds || []);
+    const [botones, setBotones] = useState<any[]>(initialConfig.customButtons || []);
+
+    async function handleSave(updates: Record<string, any>, seccion: string, incluirEmbeds = false) {
         setSaving(true);
         setMsg(null);
         try {
-            await guardarConfig(guildId, guildName, updates, seccion);
+            const finalUpdates = { ...updates };
+            if (incluirEmbeds) {
+                finalUpdates.customEmbeds = embeds;
+                finalUpdates.customButtons = botones;
+            }
+            await guardarConfig(guildId, guildName, finalUpdates, seccion);
             setMsg({ type: 'ok', text: '✅ Guardado. Revisa tu MD en Discord.' });
         } catch (e: any) {
             setMsg({ type: 'err', text: '❌ Error: ' + e.message });
@@ -57,22 +68,22 @@ export default function GuildConfigClient({
             )}
 
             {section === 'general'   && <SectionGeneral   config={initialConfig} roles={roles} onSave={handleSave} saving={saving} />}
-            {section === 'welcome'   && <SectionWelcome   config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
-            {section === 'goodbye'   && <SectionGoodbye   config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
+            {section === 'welcome'   && <SectionWelcome   config={initialConfig} channels={channels} embeds={embeds} setEmbeds={setEmbeds} onSave={handleSave} saving={saving} />}
+            {section === 'goodbye'   && <SectionGoodbye   config={initialConfig} channels={channels} embeds={embeds} setEmbeds={setEmbeds} onSave={handleSave} saving={saving} />}
             {section === 'automod'   && <SectionAutomod   config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
             {section === 'niveles'   && <SectionNiveles   config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
             {section === 'comandos'  && <SectionComandos  config={initialConfig} commands={commands} onSave={handleSave} saving={saving} />}
-            {section === 'alianzas'  && <SectionAlianzas  config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
+            {section === 'alianzas'  && <SectionAlianzas  config={initialConfig} channels={channels} roles={roles} embeds={embeds} setEmbeds={setEmbeds} onSave={handleSave} saving={saving} />}
             {section === 'staff'     && <SectionStaff     config={initialConfig} roles={roles} onSave={handleSave} saving={saving} />}
             {section === 'autoroles' && <SectionAutoRoles config={initialConfig} roles={roles} onSave={handleSave} saving={saving} />}
             {section === 'logs'      && <SectionLogs      config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
-            {section === 'embeds' && <SectionEmbeds config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
+            {section === 'embeds'    && <SectionEmbeds    config={initialConfig} channels={channels} embeds={embeds} setEmbeds={setEmbeds} botones={botones} setBotones={setBotones} onSave={handleSave} saving={saving} />}
         </div>
     );
 }
 
 // ═══════════════════════════════════════════════════════
-// ─── GENERAL ───
+// ─── GENERAL (sin cambios) ───
 // ═══════════════════════════════════════════════════════
 function SectionGeneral({ config, roles, onSave, saving }: any) {
     const [prefix, setPrefix] = useState(config.prefix || '!');
@@ -123,13 +134,7 @@ function SectionGeneral({ config, roles, onSave, saving }: any) {
             <div className={CARD}>
                 <h3 className="text-lg font-semibold text-white">⚙️ Prefijo de comandos</h3>
                 <p className="text-xs text-purple-200/70">El símbolo o palabra que precede a los comandos del bot.</p>
-                <input
-                    value={prefix}
-                    onChange={e => setPrefix(e.target.value)}
-                    maxLength={5}
-                    className={INPUT + ' max-w-xs'}
-                    placeholder="!"
-                />
+                <input value={prefix} onChange={e => setPrefix(e.target.value)} maxLength={5} className={INPUT + ' max-w-xs'} placeholder="!" />
             </div>
 
             <div className={CARD}>
@@ -164,84 +169,7 @@ function SectionGeneral({ config, roles, onSave, saving }: any) {
 }
 
 // ═══════════════════════════════════════════════════════
-// ─── WELCOME ───
-// ═══════════════════════════════════════════════════════
-function SectionWelcome({ config, channels, onSave, saving }: any) {
-    const c = config.welcome?.list?.[0] || {};
-    const [enabled, setEnabled] = useState(c.enabled ?? false);
-    const [channelId, setChannelId] = useState(c.channelId || '');
-    const [message, setMessage] = useState(c.message || '¡Bienvenido {user} a {server}!');
-
-    return (
-        <div className={CARD}>
-            <h3 className="text-lg font-semibold text-white">Mensaje de bienvenida</h3>
-
-            <label className="flex items-center gap-3 p-3 bg-[#0f0f13]/60 rounded-xl border border-[#3b2d63]/50 cursor-pointer">
-                <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} className="w-4 h-4 accent-[#5865F2]" />
-                <span className="text-sm text-purple-100">Activar bienvenidas</span>
-            </label>
-
-            <div>
-                <label className={LABEL}>Canal</label>
-                <select value={channelId} onChange={e => setChannelId(e.target.value)} className={INPUT}>
-                    <option value="">Selecciona un canal...</option>
-                    {channels.map((c: any) => <option key={c.id} value={c.id}>#{c.name}</option>)}
-                </select>
-            </div>
-
-            <div>
-                <label className={LABEL}>Mensaje</label>
-                <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3} className={INPUT} />
-                <p className="text-xs text-purple-300/50 mt-1">Variables: {'{user}'}, {'{server}'}, {'{memberCount}'}</p>
-            </div>
-
-            <button onClick={() => onSave({ 'welcome.list': [{ enabled, channelId, message, embedColor: '#3498DB' }] }, 'Bienvenidas')} disabled={saving} className={BTN_SAVE}>
-                {saving ? 'Guardando...' : '💾 Guardar'}
-            </button>
-        </div>
-    );
-}
-
-// ═══════════════════════════════════════════════════════
-// ─── GOODBYE ───
-// ═══════════════════════════════════════════════════════
-function SectionGoodbye({ config, channels, onSave, saving }: any) {
-    const c = config.goodbye?.list?.[0] || {};
-    const [enabled, setEnabled] = useState(c.enabled ?? false);
-    const [channelId, setChannelId] = useState(c.channelId || '');
-    const [message, setMessage] = useState(c.message || 'Hasta pronto {user}...');
-
-    return (
-        <div className={CARD}>
-            <h3 className="text-lg font-semibold text-white">Mensaje de despedida</h3>
-
-            <label className="flex items-center gap-3 p-3 bg-[#0f0f13]/60 rounded-xl border border-[#3b2d63]/50 cursor-pointer">
-                <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} className="w-4 h-4 accent-[#5865F2]" />
-                <span className="text-sm text-purple-100">Activar despedidas</span>
-            </label>
-
-            <div>
-                <label className={LABEL}>Canal</label>
-                <select value={channelId} onChange={e => setChannelId(e.target.value)} className={INPUT}>
-                    <option value="">Selecciona un canal...</option>
-                    {channels.map((c: any) => <option key={c.id} value={c.id}>#{c.name}</option>)}
-                </select>
-            </div>
-
-            <div>
-                <label className={LABEL}>Mensaje</label>
-                <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3} className={INPUT} />
-            </div>
-
-            <button onClick={() => onSave({ 'goodbye.list': [{ enabled, channelId, message, embedColor: '#E74C3C' }] }, 'Despedidas')} disabled={saving} className={BTN_SAVE}>
-                {saving ? 'Guardando...' : '💾 Guardar'}
-            </button>
-        </div>
-    );
-}
-
-// ═══════════════════════════════════════════════════════
-// ─── AUTOROLES ───
+// ─── AUTOROLES (sin cambios) ───
 // ═══════════════════════════════════════════════════════
 function SectionAutoRoles({ config, roles, onSave, saving }: any) {
     const [selected, setSelected] = useState<string[]>(config.autoRoles || []);
@@ -276,7 +204,7 @@ function SectionAutoRoles({ config, roles, onSave, saving }: any) {
 }
 
 // ═══════════════════════════════════════════════════════
-// ─── LOGS ───
+// ─── LOGS (sin cambios) ───
 // ═══════════════════════════════════════════════════════
 function SectionLogs({ config, channels, onSave, saving }: any) {
     const [modLogs, setModLogs] = useState(config.channels?.modLogs || '');
