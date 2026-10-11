@@ -12,13 +12,13 @@ interface Props {
 }
 
 const TABS = [
-    { id: 'general',      label: '⚙️ General' },
-    { id: 'welcome',      label: '👋 Bienvenidas' },
-    { id: 'goodbye',      label: '👋 Despedidas' },
-    { id: 'automod',      label: '🛡️ AutoMod' },
-    { id: 'niveles',      label: '📈 Niveles' },
-    { id: 'autoroles',    label: '🎭 AutoRoles' },
-    { id: 'logs',         label: '📜 Logs' },
+    { id: 'general',   label: '⚙️ General' },
+    { id: 'welcome',   label: '👋 Bienvenidas' },
+    { id: 'goodbye',   label: '👋 Despedidas' },
+    { id: 'automod',   label: '🛡️ AutoMod' },
+    { id: 'niveles',   label: '📈 Niveles' },
+    { id: 'autoroles', label: '🎭 AutoRoles' },
+    { id: 'logs',      label: '📜 Logs' },
 ];
 
 export default function ConfigTabs({ guildId, guildName, initialConfig, channels, roles }: Props) {
@@ -49,8 +49,8 @@ export default function ConfigTabs({ guildId, guildName, initialConfig, channels
                         key={t.id}
                         onClick={() => setTab(t.id)}
                         className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${
-                            tab === t.id 
-                                ? 'bg-[#1b172e] text-white border border-b-0 border-[#3b2d63]' 
+                            tab === t.id
+                                ? 'bg-[#1b172e] text-white border border-b-0 border-[#3b2d63]'
                                 : 'text-purple-200/60 hover:text-purple-200'
                         }`}
                     >
@@ -61,21 +61,33 @@ export default function ConfigTabs({ guildId, guildName, initialConfig, channels
 
             {/* Mensaje */}
             {msg && (
-                <div className="mb-4 p-3 rounded-lg bg-[#1b172e] border border-[#3b2d63] text-sm">
+                <div className="mb-4 p-3 rounded-lg bg-[#1b172e] border border-[#3b2d63] text-sm text-white">
                     {msg}
                 </div>
             )}
 
-            {/* Contenido */}
-            {tab === 'general' && <SectionGeneral config={initialConfig} onSave={handleSave} saving={saving} />}
-            {tab === 'welcome' && <SectionWelcome config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
-            {tab === 'automod' && <SectionAutomod config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
-            {/* ... añade las demás */}
+            {/* Contenido — UNA SOLA VEZ POR TAB */}
+            {tab === 'general'   && <SectionGeneral   config={initialConfig} onSave={handleSave} saving={saving} />}
+            {tab === 'welcome'   && <SectionWelcome   config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
+            {tab === 'goodbye'   && <SectionGoodbye   config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
+            {tab === 'automod'   && <SectionAutomod   config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
+            {tab === 'niveles'   && <SectionPlaceholder name="Niveles" />}
+            {tab === 'autoroles' && <SectionAutoRoles config={initialConfig} roles={roles} onSave={handleSave} saving={saving} />}
+            {tab === 'logs'      && <SectionLogs      config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
         </div>
     );
 }
 
-// ─── SECCIÓN GENERAL ─────────────────────────────────────
+// ─── Placeholder ─────────────────────────────────────────
+function SectionPlaceholder({ name }: { name: string }) {
+    return (
+        <div className="bg-[#1b172e]/80 border border-[#3b2d63] p-8 rounded-xl text-center text-purple-200/60">
+            🚧 Sección de <strong>{name}</strong> en construcción.
+        </div>
+    );
+}
+
+// ─── GENERAL ─────────────────────────────────────────────
 function SectionGeneral({ config, onSave, saving }: any) {
     const [prefix, setPrefix] = useState(config.prefix || '!');
     const [stealEnabled, setStealEnabled] = useState(config.stealEnabled ?? true);
@@ -95,13 +107,8 @@ function SectionGeneral({ config, onSave, saving }: any) {
             </div>
 
             <div className="flex items-center gap-2">
-                <input
-                    type="checkbox"
-                    checked={stealEnabled}
-                    onChange={e => setStealEnabled(e.target.checked)}
-                    className="w-4 h-4"
-                />
-                <label className="text-sm text-purple-200">Permitir comandos de "steal" (robar emojis)</label>
+                <input type="checkbox" checked={stealEnabled} onChange={e => setStealEnabled(e.target.checked)} className="w-4 h-4" />
+                <label className="text-sm text-purple-200">Permitir comandos de &quot;steal&quot;</label>
             </div>
 
             <button
@@ -115,7 +122,7 @@ function SectionGeneral({ config, onSave, saving }: any) {
     );
 }
 
-// ─── SECCIÓN WELCOME ─────────────────────────────────────
+// ─── WELCOME ─────────────────────────────────────────────
 function SectionWelcome({ config, channels, onSave, saving }: any) {
     const current = config.welcome?.list?.[0] || {};
     const [enabled, setEnabled] = useState(current.enabled ?? false);
@@ -158,7 +165,7 @@ function SectionWelcome({ config, channels, onSave, saving }: any) {
 
             <button
                 onClick={() => onSave({
-                    'welcome.list': [{ enabled, channelId, message }]
+                    'welcome.list': [{ enabled, channelId, message, embedColor: '#3498DB' }]
                 }, 'Bienvenidas')}
                 disabled={saving}
                 className="w-full bg-[#5865F2] hover:bg-[#4752C4] disabled:opacity-50 text-white font-bold py-2 rounded-lg"
@@ -169,8 +176,62 @@ function SectionWelcome({ config, channels, onSave, saving }: any) {
     );
 }
 
-// ─── SECCIÓN AUTOMOD ─────────────────────────────────────
-function SectionAutomod({ config, channels, roles, onSave, saving }: any) {
+// ─── GOODBYE ─────────────────────────────────────────────
+function SectionGoodbye({ config, channels, onSave, saving }: any) {
+    const current = config.goodbye?.list?.[0] || {};
+    const [enabled, setEnabled] = useState(current.enabled ?? false);
+    const [channelId, setChannelId] = useState(current.channelId || '');
+    const [message, setMessage] = useState(current.message || 'Hasta pronto {user}...');
+
+    return (
+        <div className="bg-[#1b172e]/80 border border-[#3b2d63] p-6 rounded-xl space-y-4">
+            <h2 className="text-xl font-semibold text-white">Mensaje de Despedida</h2>
+
+            <div className="flex items-center gap-2">
+                <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} className="w-4 h-4" />
+                <label className="text-sm text-purple-200">Activar despedidas</label>
+            </div>
+
+            <div>
+                <label className="block text-sm text-purple-200 mb-1">Canal</label>
+                <select
+                    value={channelId}
+                    onChange={e => setChannelId(e.target.value)}
+                    className="w-full bg-[#0f0f13] border border-[#3b2d63] rounded-lg px-4 py-2 text-white"
+                >
+                    <option value="">Selecciona un canal...</option>
+                    {channels.map((c: any) => (
+                        <option key={c.id} value={c.id}>#{c.name}</option>
+                    ))}
+                </select>
+            </div>
+
+            <div>
+                <label className="block text-sm text-purple-200 mb-1">Mensaje</label>
+                <textarea
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    rows={3}
+                    className="w-full bg-[#0f0f13] border border-[#3b2d63] rounded-lg px-4 py-2 text-white"
+                />
+                <p className="text-xs text-gray-500 mt-1">Variables: {'{user}'}, {'{server}'}, {'{memberCount}'}</p>
+            </div>
+
+            <button
+                onClick={() => onSave({
+                    'goodbye.list': [{ enabled, channelId, message, embedColor: '#E74C3C' }]
+                }, 'Despedidas')}
+                disabled={saving}
+                className="w-full bg-[#5865F2] hover:bg-[#4752C4] disabled:opacity-50 text-white font-bold py-2 rounded-lg"
+            >
+                {saving ? 'Guardando...' : 'Guardar'}
+            </button>
+        </div>
+    );
+}
+
+// ─── AUTOMOD ─────────────────────────────────────────────
+function SectionAutomod({ config, onSave, saving }: any) {
     const am = config.automod || {};
     const [enabled, setEnabled] = useState(am.enabled ?? false);
     const [badwords, setBadwords] = useState(am.modules?.badwords ?? true);
@@ -222,6 +283,107 @@ function SectionAutomod({ config, channels, roles, onSave, saving }: any) {
                     'automod.modules.mentions': mentions,
                     'automod.mentionsLimit': mentionsLimit,
                 }, 'AutoMod')}
+                disabled={saving}
+                className="w-full bg-[#5865F2] hover:bg-[#4752C4] disabled:opacity-50 text-white font-bold py-2 rounded-lg"
+            >
+                {saving ? 'Guardando...' : 'Guardar'}
+            </button>
+        </div>
+    );
+}
+
+// ─── AUTOROLES ───────────────────────────────────────────
+function SectionAutoRoles({ config, roles, onSave, saving }: any) {
+    const [selected, setSelected] = useState<string[]>(config.autoRoles || []);
+
+    function toggleRole(roleId: string) {
+        setSelected(prev =>
+            prev.includes(roleId)
+                ? prev.filter(id => id !== roleId)
+                : [...prev, roleId]
+        );
+    }
+
+    return (
+        <div className="bg-[#1b172e]/80 border border-[#3b2d63] p-6 rounded-xl space-y-4">
+            <h2 className="text-xl font-semibold text-white">AutoRoles</h2>
+            <p className="text-sm text-purple-200/70">
+                Roles que se asignan automáticamente a cada nuevo miembro.
+            </p>
+
+            <div className="max-h-80 overflow-y-auto bg-[#0f0f13] border border-[#3b2d63] rounded-lg p-3 space-y-1">
+                {roles
+                    .filter((r: any) => r.name !== '@everyone' && !r.managed)
+                    .map((r: any) => (
+                        <label key={r.id} className="flex items-center gap-2 p-2 rounded hover:bg-[#1b172e] cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={selected.includes(r.id)}
+                                onChange={() => toggleRole(r.id)}
+                                className="w-4 h-4"
+                            />
+                            <span
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: `#${(r.color || 0).toString(16).padStart(6, '0')}` }}
+                            />
+                            <span className="text-sm text-white">{r.name}</span>
+                        </label>
+                    ))
+                }
+            </div>
+
+            <p className="text-xs text-gray-500">Seleccionados: {selected.length}</p>
+
+            <button
+                onClick={() => onSave({ autoRoles: selected }, 'AutoRoles')}
+                disabled={saving}
+                className="w-full bg-[#5865F2] hover:bg-[#4752C4] disabled:opacity-50 text-white font-bold py-2 rounded-lg"
+            >
+                {saving ? 'Guardando...' : 'Guardar'}
+            </button>
+        </div>
+    );
+}
+
+// ─── LOGS ────────────────────────────────────────────────
+function SectionLogs({ config, channels, onSave, saving }: any) {
+    const [modLogs, setModLogs] = useState(config.channels?.modLogs || '');
+    const [automodLogs, setAutomodLogs] = useState(config.channels?.automodLogs || '');
+    const [generalLogs, setGeneralLogs] = useState(config.channels?.generalLogs || '');
+
+    const ChannelSelect = ({ value, onChange, label }: any) => (
+        <div>
+            <label className="block text-sm text-purple-200 mb-1">{label}</label>
+            <select
+                value={value}
+                onChange={e => onChange(e.target.value)}
+                className="w-full bg-[#0f0f13] border border-[#3b2d63] rounded-lg px-4 py-2 text-white"
+            >
+                <option value="">Sin canal</option>
+                {channels.map((c: any) => (
+                    <option key={c.id} value={c.id}>#{c.name}</option>
+                ))}
+            </select>
+        </div>
+    );
+
+    return (
+        <div className="bg-[#1b172e]/80 border border-[#3b2d63] p-6 rounded-xl space-y-4">
+            <h2 className="text-xl font-semibold text-white">Canales de Logs</h2>
+            <p className="text-sm text-purple-200/70">
+                Los logs son independientes: puedes tener canales distintos o todos en uno solo.
+            </p>
+
+            <ChannelSelect label="📜 Logs de Moderación" value={modLogs} onChange={setModLogs} />
+            <ChannelSelect label="🛡️ Logs de AutoMod" value={automodLogs} onChange={setAutomodLogs} />
+            <ChannelSelect label="📋 Logs Generales" value={generalLogs} onChange={setGeneralLogs} />
+
+            <button
+                onClick={() => onSave({
+                    'channels.modLogs': modLogs || null,
+                    'channels.automodLogs': automodLogs || null,
+                    'channels.generalLogs': generalLogs || null,
+                }, 'Logs')}
                 disabled={saving}
                 className="w-full bg-[#5865F2] hover:bg-[#4752C4] disabled:opacity-50 text-white font-bold py-2 rounded-lg"
             >
