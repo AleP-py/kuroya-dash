@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { guardarConfig } from '../actions';
 import SectionNiveles from './SectionNiveles';
-import SectionNiveles from './SectionNiveles';
 import SectionAutomod from './SectionAutomod';
 
 interface Props {
@@ -73,24 +72,17 @@ export default function ConfigTabs({ guildId, guildName, initialConfig, channels
             {tab === 'general'   && <SectionGeneral   config={initialConfig} onSave={handleSave} saving={saving} />}
             {tab === 'welcome'   && <SectionWelcome   config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
             {tab === 'goodbye'   && <SectionGoodbye   config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
-            {tab === 'automod'   && <SectionAutomod config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
-            {tab === 'niveles'   && <SectionNiveles config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
+            {tab === 'automod'   && <SectionAutomod   config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
+            {tab === 'niveles'   && <SectionNiveles   config={initialConfig} channels={channels} roles={roles} onSave={handleSave} saving={saving} />}
             {tab === 'autoroles' && <SectionAutoRoles config={initialConfig} roles={roles} onSave={handleSave} saving={saving} />}
             {tab === 'logs'      && <SectionLogs      config={initialConfig} channels={channels} onSave={handleSave} saving={saving} />}
         </div>
     );
 }
 
-// ─── Placeholder ─────────────────────────────────────────
-function SectionPlaceholder({ name }: { name: string }) {
-    return (
-        <div className="bg-[#1b172e]/80 border border-[#3b2d63] p-8 rounded-xl text-center text-purple-200/60">
-            🚧 Sección de <strong>{name}</strong> en construcción.
-        </div>
-    );
-}
-
-// ─── GENERAL ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// ─── GENERAL ───
+// ═══════════════════════════════════════════════════════
 function SectionGeneral({ config, onSave, saving }: any) {
     const [prefix, setPrefix] = useState(config.prefix || '!');
     const [stealEnabled, setStealEnabled] = useState(config.stealEnabled ?? true);
@@ -125,7 +117,9 @@ function SectionGeneral({ config, onSave, saving }: any) {
     );
 }
 
-// ─── WELCOME ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// ─── WELCOME ───
+// ═══════════════════════════════════════════════════════
 function SectionWelcome({ config, channels, onSave, saving }: any) {
     const current = config.welcome?.list?.[0] || {};
     const [enabled, setEnabled] = useState(current.enabled ?? false);
@@ -179,7 +173,9 @@ function SectionWelcome({ config, channels, onSave, saving }: any) {
     );
 }
 
-// ─── GOODBYE ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// ─── GOODBYE ───
+// ═══════════════════════════════════════════════════════
 function SectionGoodbye({ config, channels, onSave, saving }: any) {
     const current = config.goodbye?.list?.[0] || {};
     const [enabled, setEnabled] = useState(current.enabled ?? false);
@@ -233,69 +229,9 @@ function SectionGoodbye({ config, channels, onSave, saving }: any) {
     );
 }
 
-// ─── AUTOMOD ─────────────────────────────────────────────
-function SectionAutomod({ config, onSave, saving }: any) {
-    const am = config.automod || {};
-    const [enabled, setEnabled] = useState(am.enabled ?? false);
-    const [badwords, setBadwords] = useState(am.modules?.badwords ?? true);
-    const [links, setLinks] = useState(am.modules?.links ?? true);
-    const [invites, setInvites] = useState(am.modules?.invites ?? true);
-    const [mentions, setMentions] = useState(am.modules?.mentions ?? true);
-    const [mentionsLimit, setMentionsLimit] = useState(am.mentionsLimit ?? 4);
-
-    return (
-        <div className="bg-[#1b172e]/80 border border-[#3b2d63] p-6 rounded-xl space-y-4">
-            <h2 className="text-xl font-semibold text-white">AutoMod</h2>
-
-            <div className="flex items-center gap-2">
-                <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} className="w-4 h-4" />
-                <label className="text-sm text-purple-200">Activar AutoMod</label>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-                <label className="flex items-center gap-2 text-sm text-purple-200">
-                    <input type="checkbox" checked={badwords} onChange={e => setBadwords(e.target.checked)} /> Malas palabras
-                </label>
-                <label className="flex items-center gap-2 text-sm text-purple-200">
-                    <input type="checkbox" checked={links} onChange={e => setLinks(e.target.checked)} /> Links
-                </label>
-                <label className="flex items-center gap-2 text-sm text-purple-200">
-                    <input type="checkbox" checked={invites} onChange={e => setInvites(e.target.checked)} /> Invitaciones
-                </label>
-                <label className="flex items-center gap-2 text-sm text-purple-200">
-                    <input type="checkbox" checked={mentions} onChange={e => setMentions(e.target.checked)} /> Menciones masivas
-                </label>
-            </div>
-
-            <div>
-                <label className="block text-sm text-purple-200 mb-1">Límite de menciones</label>
-                <input
-                    type="number"
-                    value={mentionsLimit}
-                    onChange={e => setMentionsLimit(Number(e.target.value))}
-                    className="w-full bg-[#0f0f13] border border-[#3b2d63] rounded-lg px-4 py-2 text-white"
-                />
-            </div>
-
-            <button
-                onClick={() => onSave({
-                    'automod.enabled': enabled,
-                    'automod.modules.badwords': badwords,
-                    'automod.modules.links': links,
-                    'automod.modules.invites': invites,
-                    'automod.modules.mentions': mentions,
-                    'automod.mentionsLimit': mentionsLimit,
-                }, 'AutoMod')}
-                disabled={saving}
-                className="w-full bg-[#5865F2] hover:bg-[#4752C4] disabled:opacity-50 text-white font-bold py-2 rounded-lg"
-            >
-                {saving ? 'Guardando...' : 'Guardar'}
-            </button>
-        </div>
-    );
-}
-
-// ─── AUTOROLES ───────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// ─── AUTOROLES ───
+// ═══════════════════════════════════════════════════════
 function SectionAutoRoles({ config, roles, onSave, saving }: any) {
     const [selected, setSelected] = useState<string[]>(config.autoRoles || []);
 
@@ -348,7 +284,9 @@ function SectionAutoRoles({ config, roles, onSave, saving }: any) {
     );
 }
 
-// ─── LOGS ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// ─── LOGS ───
+// ═══════════════════════════════════════════════════════
 function SectionLogs({ config, channels, onSave, saving }: any) {
     const [modLogs, setModLogs] = useState(config.channels?.modLogs || '');
     const [automodLogs, setAutomodLogs] = useState(config.channels?.automodLogs || '');
