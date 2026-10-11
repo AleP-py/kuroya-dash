@@ -1,28 +1,40 @@
 import { NextAuthOptions } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./prisma";
 
 export const authOptions: NextAuthOptions = {
   debug: true,
   adapter: PrismaAdapter(prisma),
-  // Forzamos el uso de JWT para manejar los tokens de acceso de Discord
   session: {
     strategy: "jwt", 
   },
   providers: [
-    DiscordProvider({
-      clientId: process.env.DISCORD_CLIENT_ID!,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
-      wellKnown: undefined, // <--- ESTA LÍNEA SOLUCIONA EL ERROR
+    {
+      id: "discord",
+      name: "Discord",
+      type: "oauth",
       authorization: {
+        url: "https://discord.com/api/oauth2/authorize",
         params: { scope: "identify guilds" },
       },
-    }),
+      token: "https://discord.com/api/oauth2/token",
+      userinfo: "https://discord.com/api/users/@me",
+      clientId: process.env.DISCORD_CLIENT_ID!,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+      profile(profile) {
+        return {
+          id: profile.id,
+          name: profile.username,
+          email: profile.email, // Discord puede no devolver email si no pides el scope 'email'
+          image: profile.avatar 
+            ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
+            : `https://cdn.discordapp.com/embed/avatars/0.png`,
+        };
+      },
+    },
   ],
   callbacks: {
     async jwt({ token, account, user }) {
-      // Al iniciar sesión, guardamos el access_token de Discord en el token JWT
       if (account) {
         token.accessToken = account.access_token;
       }
@@ -32,7 +44,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      // Pasamos el access_token y el id al frontend (Dashboard)
       if (session.user) {
         // @ts-ignore
         session.user.id = token.id;
