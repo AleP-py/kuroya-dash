@@ -15,7 +15,7 @@ export async function POST(req: Request, { params }: { params: { guildId: string
   const welcomeChannelId = formData.get("welcomeChannelId") as string;
   const welcomeMessage = formData.get("welcomeMessage") as string;
 
-  // 1. Actualizamos en la base de datos
+  // 1. Actualizamos en la base de datos (Postgres)
   const updatedGuild = await prisma.guild.update({
     where: { id: guildId },
     data: {
@@ -26,17 +26,22 @@ export async function POST(req: Request, { params }: { params: { guildId: string
     },
   });
 
-  // 2. Enviamos la notificación al bot (Webhook interno)
+  // 2. Enviamos la notificación al bot (Webhook)
   try {
-    await fetch(process.env.BOT_API_URL || "http://127.0.0.1:3001/api/notify-change", {
+    // ⚠️ IMPORTANTE: Si el bot está en OTRO contenedor, debes poner la URL pública del bot aquí.
+    // Si están en el MISMO contenedor, usa http://127.0.0.1:3001
+    const botWebhookUrl = process.env.BOT_WEBHOOK_URL || "http://127.0.0.1:3001/api/notify-change";
+    
+    await fetch(botWebhookUrl, {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.BOT_API_SECRET}` // Seguridad
+        "Authorization": `Bearer ${process.env.DASHBOARD_SECRET || ''}`
       },
       body: JSON.stringify({
         // @ts-ignore
-        userId: session.user.id, // ID del usuario en tu base de datos
+        discordId: session.user.discordId, // 👈 Enviamos el Discord ID, no el de Prisma
+        userName: session.user.name,
         guildId: guildId,
         guildName: updatedGuild.name,
         changes: { prefix, welcomeEnabled, welcomeChannelId, welcomeMessage }
@@ -44,7 +49,7 @@ export async function POST(req: Request, { params }: { params: { guildId: string
     });
   } catch (error) {
     console.error("Error notificando al bot:", error);
-    // No detenemos la respuesta si el bot falla, los datos ya se guardaron
+    // No detenemos la respuesta si el bot falla, los datos ya se guardaron en Postgres
   }
 
   // 3. Redirigimos de vuelta
